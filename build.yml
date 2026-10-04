@@ -1,0 +1,23 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Arrange files
+        run: |
+          mkdir -p app/src/main/java/com/supergo/browser app/src/main/assets app/src/main/res/mipmap-xxxhdpi app/src/main/res/values
+          mv MainActivity.java app/src/main/java/com/supergo/browser/
+          mv AndroidManifest.xml app/src/main/
+          mv hosts.txt app/src/main/assets/
+          mv ic_launcher.png app/src/main/res/mipmap-xxxhdpi/
+          mv app.gradle app/build.gradle
+          echo '<resources><string name="app_name">SUPERGO</string></resources>' > app/src/main/res/values/strings.xml
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: 17}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: 8.7}
+      - run: gradle assembleDebug
+      - uses: actions/upload-artifact@v4
+        with: {name: SUPERGO-apk, path: app/build/outputs/apk/debug/app-debug.apk}
